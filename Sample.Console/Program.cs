@@ -5,34 +5,39 @@ using System.Text;
 using System.Threading.Tasks;
 using System.IO;
 using System.Diagnostics;
+using System.Threading;
 
 using msConfig = System.Configuration;
 using drexyiaConfig = Drexyia.Yaml.Configuration;
 
-namespace ConsoleUI {
+//should we be able to write to the settings file
+namespace Sample.ConsoleUI {
     class Program {
+
         static void Main(string[] args) {
 
-            var msValue1 = msConfig.ConfigurationManager.AppSettings["key1"];
-            var drexyiaValue1 = drexyiaConfig.ConfigurationManager.AppSettings["key1"];
+            ConfigFile configFile = new ConfigFile();
 
-            Debug.Assert(msValue1 == drexyiaValue1);
+            WaitCallback callBack = new WaitCallback(configFile.Run);
+            ThreadPool.QueueUserWorkItem(callBack);
 
-            msValue1 = msConfig.ConfigurationManager.AppSettings["key2"];
-            drexyiaValue1 = drexyiaConfig.ConfigurationManager.AppSettings["key2"];
+            for(;;) {
 
-            Debug.Assert(msValue1 == drexyiaValue1);
+                Console.Write("Press v to view config settings, any other key to exit: ");
+                var input = Console.ReadLine();
 
-            msValue1 = msConfig.ConfigurationManager.AppSettings[0];
-            drexyiaValue1 = drexyiaConfig.ConfigurationManager.AppSettings[0];
+                if (input != "v") {
+                    break;
+                }
 
-            Debug.Assert(msValue1 == drexyiaValue1);
+                Console.WriteLine();
+                configFile.WriteConfigValues();
+                Console.WriteLine();
 
-            msValue1 = msConfig.ConfigurationManager.AppSettings[1];
-            drexyiaValue1 = drexyiaConfig.ConfigurationManager.AppSettings[1];
+            } 
 
-            Debug.Assert(msValue1 == drexyiaValue1);
-
+            
+         
         }
     }
 }

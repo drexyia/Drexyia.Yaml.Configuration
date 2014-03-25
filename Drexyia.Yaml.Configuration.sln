@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2012
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Drexyia.Yaml.Configuration", "Yaml.Configuration\Drexyia.Yaml.Configuration.csproj", "{A2745720-8232-4A4C-B591-ED9EAFF40529}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sample.Console", "Sample.Console\Sample.Console.csproj", "{32F88E6A-2CA4-40A8-A294-37C3B32BBBE5}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sample.ConsoleUI", "Sample.Console\Sample.ConsoleUI.csproj", "{32F88E6A-2CA4-40A8-A294-37C3B32BBBE5}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

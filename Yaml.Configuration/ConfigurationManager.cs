@@ -10,38 +10,83 @@ using System.IO;
 using YamlDotNet.RepresentationModel;
 
 namespace Drexyia.Yaml.Configuration {
-    public static class ConfigurationManager {
+    public sealed class ConfigurationManager {
 
-        public static NameValueCollection AppSettings {
+        bool _isDirty = true;
+        ConfigurationFileWatcher _fileWatcher;
+
+        NameValueCollection _appSettings;
+
+        public NameValueCollection AppSettings {
             get {
 
-                var nameValues = new NameValueCollection();
+                if (_isDirty) {
+                    ReadAppSettings();
+                    _isDirty = false;
 
-                using (TextReader reader = File.OpenText(@"App.config.yaml")) {
-                    var yaml = new YamlStream();
-                    yaml.Load(reader);
+                    //only start watching the file for changes after it has been first accessed
+                    _fileWatcher.StartWatching();
 
-                    var mapping = (YamlMappingNode)yaml.Documents[0].RootNode;
+                }
 
-                    foreach (var entry in mapping.Children) {
-                        var rootNode = (YamlScalarNode)entry.Key;
-                        if (rootNode.Value == "app-settings") {
+                return _appSettings;
+            }
+        }
 
-                            var appSettings = (YamlMappingNode)entry.Value;
-                            foreach (var appSetting in appSettings.Children) {
+        void ReadAppSettings() {
+            _appSettings = new NameValueCollection();
 
-                                var nodeKey = (YamlScalarNode)appSetting.Key;
-                                var nodeValue = (YamlScalarNode)appSetting.Value;
+            using (TextReader reader = File.OpenText(@"App.config.yaml")) {
+                var yaml = new YamlStream();
+                yaml.Load(reader);
 
-                                nameValues[nodeKey.Value] = nodeValue.Value;
-                            }
+                var mapping = (YamlMappingNode)yaml.Documents[0].RootNode;
+
+                foreach (var entry in mapping.Children) {
+                    var rootNode = (YamlScalarNode)entry.Key;
+                    if (rootNode.Value == "app-settings") {
+
+                        var appSettings = (YamlMappingNode)entry.Value;
+                        foreach (var appSetting in appSettings.Children) {
+
+                            var nodeKey = (YamlScalarNode)appSetting.Key;
+                            var nodeValue = (YamlScalarNode)appSetting.Value;
+
+                            _appSettings[nodeKey.Value] = nodeValue.Value;
                         }
                     }
                 }
-
-                return nameValues;
-
             }
         }
+
+        void _fileWatcher_FileChanged(object sender, EventArgs e) {
+            _isDirty = true;
+        }
+        
+        #region singleton pattern
+
+        private static volatile ConfigurationManager instance;
+        private static object syncRoot = new Object();
+
+        private ConfigurationManager() {
+            _fileWatcher = new ConfigurationFileWatcher();
+            _fileWatcher.FileChanged += _fileWatcher_FileChanged;
+        }
+
+        public static ConfigurationManager Instance {
+            get {
+                if (instance == null) {
+                    lock (syncRoot) {
+                        if (instance == null)
+                            instance = new ConfigurationManager();
+                    }
+                }
+
+                return instance;
+            }
+        }
+
+         #endregion
+   
     }
 }
